@@ -3,7 +3,7 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>Dashboard สสจ.ปัตตานี - ภาพรวมและ KPI</title>
+    <title>Dashboard สสจ.ปัตตานี - ภาพรวมแบบบูรณาการ</title>
     <script src="https://cdn.tailwindcss.com"></script>
     <script src="https://cdn.jsdelivr.net/npm/chart.js"></script>
     <link href="https://fonts.googleapis.com/css2?family=Sarabun:wght@300;400;500;600&display=swap" rel="stylesheet">
@@ -12,18 +12,18 @@
         .card { background-color: #ffffff; border-radius: 0.75rem; box-shadow: 0 4px 6px -1px rgba(0, 0, 0, 0.1); padding: 1.5rem; }
     </style>
 </head>
-<body class="text-slate-800">
+<body class="text-slate-800 pb-10">
 
-    <nav class="bg-blue-600 shadow-md">
+    <nav class="bg-blue-700 shadow-md sticky top-0 z-50">
         <div class="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8">
             <div class="flex items-center justify-between h-16">
                 <div class="flex items-center">
-                    <span class="text-white text-xl font-semibold">📍 ระบบแสดงผลข้อมูลและ KPI สสจ.ปัตตานี</span>
+                    <span class="text-white text-xl font-semibold">📍 Executive Dashboard สสจ.ปัตตานี</span>
                 </div>
-                <div class="flex">
-                    <select id="hospitalFilter" class="bg-white border border-blue-300 text-blue-900 text-sm rounded-lg focus:ring-blue-500 focus:border-blue-500 block w-full p-2.5 shadow-sm" onchange="updateDashboard()">
-                        <option value="all">ภาพรวม สสจ. (ทุกโรงพยาบาล)</option>
-                        <option value="pattani">รพ.ปัตตานี</option>
+                <div class="flex w-64">
+                    <select id="hospitalFilter" class="bg-white border border-blue-300 text-blue-900 text-sm rounded-lg focus:ring-blue-500 focus:border-blue-500 block w-full p-2.5 shadow-sm font-medium" onchange="updateDashboard()">
+                        <option value="all">ภาพรวม สสจ. (ทุก รพ.)</option>
+                        <option value="pattani">รพ.ปัตตานี (ศูนย์)</option>
                         <option value="khokpho">รพ.โคกโพธิ์</option>
                         <option value="yaring">รพ.ยะหริ่ง</option>
                     </select>
@@ -32,105 +32,80 @@
         </div>
     </nav>
 
-    <div class="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 py-8">
+    <div class="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 py-8 space-y-6">
         
-        <div class="grid grid-cols-1 md:grid-cols-4 gap-6 mb-8">
-            <div class="card border-l-4 border-blue-500">
-                <h3 class="text-sm font-medium text-blue-500 uppercase">อัตราการเสียชีวิต (IPD)</h3>
-                <p class="text-3xl font-bold text-slate-700 mt-2" id="kpi-death-rate">1.2%</p>
-                <p class="text-xs text-green-500 mt-1" id="kpi-death-trend">↓ ลดลง 0.1% จากเดือนก่อน</p>
+        <div class="grid grid-cols-1 md:grid-cols-4 gap-6">
+            <div class="card border-l-4 border-blue-600">
+                <h3 class="text-xs font-semibold text-blue-600 uppercase tracking-wider">อัตราการครองเตียง (Bed Occupancy)</h3>
+                <p class="text-3xl font-bold text-slate-700 mt-2" id="kpi-bed">82.5%</p>
+                <p class="text-xs text-slate-500 mt-1" id="kpi-bed-desc">เฉลี่ยสะสมปีงบประมาณ</p>
             </div>
-            <div class="card border-l-4 border-blue-400">
-                <h3 class="text-sm font-medium text-blue-500 uppercase">อัตราคัดกรอง NCDs</h3>
-                <p class="text-3xl font-bold text-slate-700 mt-2" id="kpi-ncd-screen">85.4%</p>
-                <p class="text-xs text-green-500 mt-1" id="kpi-ncd-trend">ผ่านเกณฑ์ KPI เขตสุขภาพ (80%)</p>
+            <div class="card border-l-4 border-red-500">
+                <h3 class="text-xs font-semibold text-red-500 uppercase tracking-wider">Re-admit (ภายใน 28 วัน)</h3>
+                <p class="text-3xl font-bold text-slate-700 mt-2" id="kpi-readmit">2.4%</p>
+                <p class="text-xs text-green-600 mt-1 font-medium" id="kpi-readmit-trend">↓ ผ่านเกณฑ์ (< 3%)</p>
+            </div>
+            <div class="card border-l-4 border-green-500">
+                <h3 class="text-xs font-semibold text-green-600 uppercase tracking-wider">สภาพคล่องทางการเงิน (Current Ratio)</h3>
+                <p class="text-3xl font-bold text-slate-700 mt-2" id="kpi-finance">1.45</p>
+                <p class="text-xs text-green-600 mt-1" id="kpi-finance-trend">ระดับบวก (รายรับ > รายจ่าย)</p>
             </div>
             <div class="card border-l-4 border-cyan-500">
-                <h3 class="text-sm font-medium text-cyan-600 uppercase">ความสมบูรณ์เวชระเบียน</h3>
-                <p class="text-3xl font-bold text-slate-700 mt-2" id="kpi-audit">92.0%</p>
-                <p class="text-xs text-blue-500 mt-1">ประเมินจากระบบ AI Audit</p>
-            </div>
-            <div class="card border-l-4 border-sky-400">
-                <h3 class="text-sm font-medium text-sky-600 uppercase">จำนวนผู้รับบริการ (Visit)</h3>
-                <p class="text-3xl font-bold text-slate-700 mt-2" id="kpi-visit">142,501</p>
-                <p class="text-xs text-slate-400 mt-1">ข้อมูลสะสมปีงบประมาณ</p>
+                <h3 class="text-xs font-semibold text-cyan-600 uppercase tracking-wider">บุคลากรเตรียมเกษียณ (ใน 3 ปี)</h3>
+                <p class="text-3xl font-bold text-slate-700 mt-2" id="kpi-retire">45 <span class="text-sm font-normal text-slate-500">คน</span></p>
+                <p class="text-xs text-slate-500 mt-1" id="kpi-retire-desc">แพทย์ 5, พยาบาล 30, อื่นๆ 10</p>
             </div>
         </div>
 
         <div class="grid grid-cols-1 md:grid-cols-2 gap-6">
             <div class="card">
-                <h2 class="text-lg font-semibold text-slate-700 mb-4">เปรียบเทียบร้อยละการคัดกรองโรค (แยกราย รพ.)</h2>
-                <canvas id="barChart"></canvas>
+                <h2 class="text-lg font-semibold text-slate-700 mb-4 border-b pb-2">สถิติผู้ป่วยใน (IPD Trends)</h2>
+                <canvas id="patientLineChart"></canvas>
             </div>
             
             <div class="card">
-                <h2 class="text-lg font-semibold text-slate-700 mb-4">แนวโน้มการเข้ารับบริการ (OPD) รายเดือน</h2>
-                <canvas id="lineChart"></canvas>
-            </div>
-
-            <div class="card md:col-span-2 flex flex-col items-center">
-                <h2 class="text-lg font-semibold text-slate-700 mb-4 w-full text-left">สัดส่วนผู้ป่วยแยกตามกลุ่มโรค (จาก 43 แฟ้ม: DIAG)</h2>
-                <div class="w-full md:w-1/3">
-                    <canvas id="doughnutChart"></canvas>
+                <h2 class="text-lg font-semibold text-slate-700 mb-4 border-b pb-2">ผลประเมิน KPI นโยบายกระทรวงสาธารณสุข</h2>
+                <div class="flex justify-center h-64">
+                    <canvas id="policyRadarChart"></canvas>
                 </div>
             </div>
         </div>
+
+        <div class="grid grid-cols-1 md:grid-cols-2 gap-6">
+            <div class="card">
+                <h2 class="text-lg font-semibold text-slate-700 mb-4 border-b pb-2">สถานะทางการเงิน (ล้านบาท)</h2>
+                <canvas id="financeBarChart"></canvas>
+            </div>
+
+            <div class="card flex flex-col">
+                <h2 class="text-lg font-semibold text-slate-700 mb-4 border-b pb-2">โครงสร้างบุคลากรทางการแพทย์ (FTE)</h2>
+                <div class="flex flex-col md:flex-row items-center justify-center flex-grow">
+                    <div class="w-full md:w-1/2 h-48 flex justify-center">
+                        <canvas id="hrDoughnutChart"></canvas>
+                    </div>
+                    <div class="w-full md:w-1/2 mt-4 md:mt-0 pl-4">
+                        <ul class="text-sm space-y-2 text-slate-600" id="hr-details">
+                            <li class="flex justify-between"><span>👨‍⚕️ แพทย์เฉพาะทาง:</span> <span class="font-semibold text-blue-600">120 คน</span></li>
+                            <li class="flex justify-between"><span>💉 พยาบาลวิสัญญี:</span> <span class="font-semibold text-blue-600">45 คน</span></li>
+                            <li class="flex justify-between"><span>🩺 พยาบาลทั่วไป:</span> <span class="font-semibold text-blue-600">450 คน</span></li>
+                            <li class="flex justify-between"><span>💊 เภสัชกร:</span> <span class="font-semibold text-blue-600">60 คน</span></li>
+                        </ul>
+                    </div>
+                </div>
+            </div>
+        </div>
+
     </div>
 
     <script>
-        // การตั้งค่าสีพื้นฐานของ Chart
         Chart.defaults.font.family = "'Sarabun', sans-serif";
         Chart.defaults.color = '#475569';
 
-        let barChart, lineChart, doughnutChart;
+        let patientChart, policyChart, financeChart, hrChart;
 
-        // ข้อมูลสมมติ (Mock Data) แบบฝังในโค้ดเพื่อความรวดเร็ว
-        const mockData = {
+        // --- Mock Data ---
+        const dataStore = {
             all: {
-                barData: [85.4, 78.2, 92.0, 88.4, 75.1],
-                lineData: [21000, 25000, 24500, 26000, 23800, 27200],
-                doughnutData: [45, 25, 20, 10],
-                kpi: { death: "1.2%", ncd: "85.4%", audit: "92.0%", visit: "142,501", deathTrend: "↓ ลดลง 0.1% จากเดือนก่อน" }
-            },
-            pattani: {
-                barData: [90.5, 0, 0, 0, 0], 
-                lineData: [8000, 8500, 8200, 9000, 8800, 9500],
-                doughnutData: [50, 20, 20, 10],
-                kpi: { death: "0.9%", ncd: "90.5%", audit: "96.5%", visit: "52,000", deathTrend: "↓ ลดลง 0.2% จากเดือนก่อน" }
-            },
-            khokpho: {
-                barData: [0, 78.2, 0, 0, 0], 
-                lineData: [5000, 6500, 6000, 7000, 6800, 7500],
-                doughnutData: [40, 30, 20, 10],
-                kpi: { death: "1.5%", ncd: "78.2%", audit: "88.0%", visit: "38,800", deathTrend: "↑ เพิ่มขึ้น 0.1% จากเดือนก่อน" }
-            },
-            yaring: {
-                barData: [0, 0, 92.0, 0, 0], 
-                lineData: [4000, 5000, 4800, 5500, 4200, 6000],
-                doughnutData: [42, 28, 15, 15],
-                kpi: { death: "1.1%", ncd: "92.0%", audit: "94.2%", visit: "29,500", deathTrend: "คงที่" }
-            }
-        };
-
-        function initCharts() {
-            // 1. Bar Chart
-            const ctxBar = document.getElementById('barChart').getContext('2d');
-            barChart = new Chart(ctxBar, {
-                type: 'bar',
-                data: {
-                    labels: ['รพ.ปัตตานี', 'รพ.โคกโพธิ์', 'รพ.ยะหริ่ง', 'รพ.สายบุรี', 'รพ.หนองจิก'],
-                    datasets: [{
-                        label: 'ร้อยละความสำเร็จ (%)',
-                        data: mockData.all.barData,
-                        backgroundColor: '#3b82f6', 
-                        borderRadius: 4
-                    }]
-                },
-                options: { responsive: true, scales: { y: { beginAtZero: true, max: 100 } } }
-            });
-
-            // 2. Line Chart
-            const ctxLine = document.getElementById('lineChart').getContext('2d');
-            lineChart = new Chart(ctxLine, {
-                type: 'line',
-                data:
+                kpi: { bed: "82.5%", readmit: "2.4%", finance: "1.45", retire: "112", retireDesc: "แพทย์ 12, พยาบาล 75, อื่นๆ 25" },
+                patientLine: {
+                    bedData: [75, 78, 8
