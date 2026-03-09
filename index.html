@@ -8,7 +8,7 @@
     <script src="https://cdn.jsdelivr.net/npm/chart.js"></script>
     <link href="https://fonts.googleapis.com/css2?family=Sarabun:wght@300;400;500;600&display=swap" rel="stylesheet">
     <style>
-        body { font-family: 'Sarabun', sans-serif; background-color: #f0f9ff; /* สีฟ้าอ่อนสุด */ }
+        body { font-family: 'Sarabun', sans-serif; background-color: #f0f9ff; }
         .card { background-color: #ffffff; border-radius: 0.75rem; box-shadow: 0 4px 6px -1px rgba(0, 0, 0, 0.1); padding: 1.5rem; }
     </style>
 </head>
@@ -21,7 +21,7 @@
                     <span class="text-white text-xl font-semibold">📍 ระบบแสดงผลข้อมูลและ KPI สสจ.ปัตตานี</span>
                 </div>
                 <div class="flex">
-                    <select id="hospitalFilter" class="bg-white border border-blue-300 text-blue-900 text-sm rounded-lg focus:ring-blue-500 focus:border-blue-500 block w-full p-2.5" onchange="updateDashboard()">
+                    <select id="hospitalFilter" class="bg-white border border-blue-300 text-blue-900 text-sm rounded-lg focus:ring-blue-500 focus:border-blue-500 block w-full p-2.5 shadow-sm" onchange="updateDashboard()">
                         <option value="all">ภาพรวม สสจ. (ทุกโรงพยาบาล)</option>
                         <option value="pattani">รพ.ปัตตานี</option>
                         <option value="khokpho">รพ.โคกโพธิ์</option>
@@ -38,17 +38,17 @@
             <div class="card border-l-4 border-blue-500">
                 <h3 class="text-sm font-medium text-blue-500 uppercase">อัตราการเสียชีวิต (IPD)</h3>
                 <p class="text-3xl font-bold text-slate-700 mt-2" id="kpi-death-rate">1.2%</p>
-                <p class="text-xs text-green-500 mt-1">↓ ลดลง 0.1% จากเดือนก่อน</p>
+                <p class="text-xs text-green-500 mt-1" id="kpi-death-trend">↓ ลดลง 0.1% จากเดือนก่อน</p>
             </div>
             <div class="card border-l-4 border-blue-400">
                 <h3 class="text-sm font-medium text-blue-500 uppercase">อัตราคัดกรอง NCDs</h3>
                 <p class="text-3xl font-bold text-slate-700 mt-2" id="kpi-ncd-screen">85.4%</p>
-                <p class="text-xs text-green-500 mt-1">ผ่านเกณฑ์ KPI เขตสุขภาพ (80%)</p>
+                <p class="text-xs text-green-500 mt-1" id="kpi-ncd-trend">ผ่านเกณฑ์ KPI เขตสุขภาพ (80%)</p>
             </div>
             <div class="card border-l-4 border-cyan-500">
                 <h3 class="text-sm font-medium text-cyan-600 uppercase">ความสมบูรณ์เวชระเบียน</h3>
                 <p class="text-3xl font-bold text-slate-700 mt-2" id="kpi-audit">92.0%</p>
-                <p class="text-xs text-blue-500 mt-1">จากระบบ Audit</p>
+                <p class="text-xs text-blue-500 mt-1">ประเมินจากระบบ AI Audit</p>
             </div>
             <div class="card border-l-4 border-sky-400">
                 <h3 class="text-sm font-medium text-sky-600 uppercase">จำนวนผู้รับบริการ (Visit)</h3>
@@ -78,23 +78,37 @@
     </div>
 
     <script>
-        // การตั้งค่าสีพื้นฐานของ Chart ให้เข้ากับธีมฟ้า-ขาว
+        // การตั้งค่าสีพื้นฐานของ Chart
         Chart.defaults.font.family = "'Sarabun', sans-serif";
         Chart.defaults.color = '#475569';
 
         let barChart, lineChart, doughnutChart;
 
-        // ฟังก์ชันจำลองการดึงข้อมูลที่ผ่านการประมวลผลจาก 43 แฟ้มแล้ว (ควรเชื่อมต่อ API หรือดึงจาก data.json ในระบบจริง)
+        // ข้อมูลสมมติ (Mock Data) แบบฝังในโค้ดเพื่อความรวดเร็ว
         const mockData = {
             all: {
-                barData: [85, 78, 92, 88, 75],
-                lineData: [12000, 15000, 14500, 16000, 15800, 17200],
-                doughnutData: [45, 25, 20, 10]
+                barData: [85.4, 78.2, 92.0, 88.4, 75.1],
+                lineData: [21000, 25000, 24500, 26000, 23800, 27200],
+                doughnutData: [45, 25, 20, 10],
+                kpi: { death: "1.2%", ncd: "85.4%", audit: "92.0%", visit: "142,501", deathTrend: "↓ ลดลง 0.1% จากเดือนก่อน" }
             },
             pattani: {
-                barData: [90, 0, 0, 0, 0], // สมมติว่าดูกราฟแยก
+                barData: [90.5, 0, 0, 0, 0], 
                 lineData: [8000, 8500, 8200, 9000, 8800, 9500],
-                doughnutData: [50, 20, 20, 10]
+                doughnutData: [50, 20, 20, 10],
+                kpi: { death: "0.9%", ncd: "90.5%", audit: "96.5%", visit: "52,000", deathTrend: "↓ ลดลง 0.2% จากเดือนก่อน" }
+            },
+            khokpho: {
+                barData: [0, 78.2, 0, 0, 0], 
+                lineData: [5000, 6500, 6000, 7000, 6800, 7500],
+                doughnutData: [40, 30, 20, 10],
+                kpi: { death: "1.5%", ncd: "78.2%", audit: "88.0%", visit: "38,800", deathTrend: "↑ เพิ่มขึ้น 0.1% จากเดือนก่อน" }
+            },
+            yaring: {
+                barData: [0, 0, 92.0, 0, 0], 
+                lineData: [4000, 5000, 4800, 5500, 4200, 6000],
+                doughnutData: [42, 28, 15, 15],
+                kpi: { death: "1.1%", ncd: "92.0%", audit: "94.2%", visit: "29,500", deathTrend: "คงที่" }
             }
         };
 
@@ -108,7 +122,7 @@
                     datasets: [{
                         label: 'ร้อยละความสำเร็จ (%)',
                         data: mockData.all.barData,
-                        backgroundColor: '#3b82f6', // สีฟ้า Blue-500
+                        backgroundColor: '#3b82f6', 
                         borderRadius: 4
                     }]
                 },
@@ -119,64 +133,4 @@
             const ctxLine = document.getElementById('lineChart').getContext('2d');
             lineChart = new Chart(ctxLine, {
                 type: 'line',
-                data: {
-                    labels: ['ต.ค.', 'พ.ย.', 'ธ.ค.', 'ม.ค.', 'ก.พ.', 'มี.ค.'],
-                    datasets: [{
-                        label: 'จำนวน Visit',
-                        data: mockData.all.lineData,
-                        borderColor: '#0284c7', // Sky-600
-                        backgroundColor: 'rgba(2, 132, 199, 0.1)',
-                        fill: true,
-                        tension: 0.3
-                    }]
-                },
-                options: { responsive: true }
-            });
-
-            // 3. Doughnut Chart
-            const ctxDoughnut = document.getElementById('doughnutChart').getContext('2d');
-            doughnutChart = new Chart(ctxDoughnut, {
-                type: 'doughnut',
-                data: {
-                    labels: ['ความดันโลหิตสูง (HT)', 'เบาหวาน (DM)', 'หัวใจหลอดเลือด', 'อื่นๆ'],
-                    datasets: [{
-                        data: mockData.all.doughnutData,
-                        backgroundColor: ['#2563eb', '#38bdf8', '#818cf8', '#e2e8f0'], // โทนฟ้าสลับเทาขาว
-                        borderWidth: 2,
-                        borderColor: '#ffffff'
-                    }]
-                },
-                options: { responsive: true }
-            });
-        }
-
-        // ฟังก์ชันอัปเดตข้อมูลเมื่อเลือกเปลี่ยนโรงพยาบาลใน Dropdown
-        function updateDashboard() {
-            const selected = document.getElementById('hospitalFilter').value;
-            const data = mockData[selected] || mockData.all;
-
-            // อัปเดตกราฟ
-            barChart.data.datasets[0].data = data.barData;
-            barChart.update();
-
-            lineChart.data.datasets[0].data = data.lineData;
-            lineChart.update();
-
-            doughnutChart.data.datasets[0].data = data.doughnutData;
-            doughnutChart.update();
-
-            // ตัวอย่างอัปเดตตัวเลข KPI ด้านบน
-            if(selected === 'pattani') {
-                document.getElementById('kpi-visit').innerText = '75,000';
-                document.getElementById('kpi-audit').innerText = '95.5%';
-            } else {
-                document.getElementById('kpi-visit').innerText = '142,501';
-                document.getElementById('kpi-audit').innerText = '92.0%';
-            }
-        }
-
-        // โหลดกราฟตอนเปิดหน้าเว็บครั้งแรก
-        window.onload = initCharts;
-    </script>
-</body>
-</html>
+                data:
